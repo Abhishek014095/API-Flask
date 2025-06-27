@@ -4,6 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 # from sqlalchemy.dialects.mysql import pymysql
 import pymysql
+from flask import make_response
 
 app = Flask(__name__)
 
@@ -19,9 +20,9 @@ class user_model():
             )
             # self.con.commit()
             self.cur = self.con.cursor()
-            print("Connection successful ✅")
+            print("Connection successful ")
         except Exception as e:
-            print("Connection failed ❌:", e)
+            print("Connection failed :", e)
 
 
     def user_getall_model(self):
@@ -30,15 +31,18 @@ class user_model():
         # print(result)
 
         if len(result)>0:
-            return json.dumps(result)
+            res=make_response({"payload":result},200)
+            res.headers['Access-Control-Allow-Origin']="*"
+            return res
+            # return json.dumps(result)
         else:
-            return "data is not present"
+            return make_response({"message":"data is not present"},204)
 
 
     def user_addone_model(self,data):
         self.cur.execute(f"INSERT INTO users(name,email,phone,role,password) VALUES('{data['name']}','{data['email']}','{data['phone']}','{data['role']}','{data['password']}')")
         self.con.commit()
-        return  "user created successfully 1"
+        return  make_response({"message":"user created successfully 1"},201)
 
 
     def user_update_model(self,data):
@@ -46,9 +50,9 @@ class user_model():
         print(data)
         self.con.commit()
         if self.cur.rowcount>0:
-            return "user update successfully"
+            return make_response({"message":"user update successfully"},201)
         else:
-            return "nothing to update"
+            return make_response({"message":"nothing to update"},202)
 
         # self.con.commit()
 
@@ -56,4 +60,21 @@ class user_model():
     def user_delete_model(self,id):
         self.cur.execute(f" DELETE FROM users WHERE id={id}")
         self.con.commit()
-        return f"id number {id} delete successfully"
+        return make_response({"message":f"id number {id} delete successfully"},202)
+
+
+    def user_patch_model(self,data,id):
+        qry="UPDATE users SET "
+        for key in data:
+            qry=qry+f"{key}='{data[key]}',"
+
+        qry=qry[:-1]+f" WHERE id={id}"
+
+        self.cur.execute(qry)
+        # print(data)
+        self.con.commit()
+        if self.cur.rowcount > 0:
+            return make_response({"message": "user update successfully"}, 201)
+        else:
+            return make_response({"message": "nothing to update"}, 202)
+        # return qry

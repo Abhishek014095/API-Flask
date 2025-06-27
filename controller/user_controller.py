@@ -19,3 +19,8 @@ def register_route(app):
     @app.route("/user/delete/<id>", methods=["DELETE"])
     def user_delete_controller(id):
         return obj.user_delete_model(id)
+
+    @app.route("/user/patch/<id>",methods=["PATCH"])
+    def user_patch_controller(id):
+        return obj.user_patch_model(request.args,id)
+
