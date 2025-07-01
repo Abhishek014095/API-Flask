@@ -78,3 +78,28 @@ class user_model():
         else:
             return make_response({"message": "nothing to update"}, 202)
         # return qry
+
+    def user_pagination_model(self,limit,page):
+        limit=int(limit)
+        page=int(page)
+        start=(page*limit)-limit
+        qry=f"SELECT * FROM users LIMIT {start}, {limit}"
+
+        self.cur.execute(qry)
+        result = self.cur.fetchall()
+        # print(result)
+
+        if len(result) > 0:
+            res = make_response({"payload": result , "limit":limit,"page_number":page  }, 200)
+            return res
+        else:
+            return make_response({"message": "data is not present"}, 204)
+
+    def user_upload_model(self,uid,filepath):
+        self.cur.execute(f"UPDATE users SET avatar ='{filepath}' WHERE id={uid}")
+
+        if self.cur.rowcount > 0:
+            return make_response({"message": "File uploaded successfully"}, 201)
+        else:
+            return make_response({"message": "nothing to update"}, 202)
+
